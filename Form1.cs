@@ -15,8 +15,7 @@ namespace fond
 
     public partial class Form1 : Form
     {
-
-        int[,] x = { {1,0}, // заполняем пересечения
+int[,] x = { {1,0}, // заполняем пересечения
 {3,0},
 {7,0 },
 {11,0 },
@@ -76,13 +75,11 @@ namespace fond
 {1,18 },
 {2,18 }};
 
-
-
-
         public Form1()
         {
+            string k = @"Data Source =.\bank.db; Version = 3;";
             InitializeComponent();
-            Present(LoadDataActive(), LoadDataPassive());
+            Present(LoadDataActive(k), LoadDataPassive(k));
 
             int K = x.GetLength(0);
             int L = x.GetLength(1);
@@ -92,11 +89,11 @@ namespace fond
             for (int i = 0; i < K; ++i)
                 for (int j = 0; j < L; ++j)
                     dataGridView3.Rows[i].Cells[j].Value = x[i, j];
-
+            openFileDialog1.Filter = "DataBase(*.db)|*.db|All files(*.*)|*.*";
         }
 
-        private List<string[]> LoadDataPassive()
-        { // Массив Пассивов из БД
+        private List<string[]> LoadDataPassive(string k)// Массив Пассивов из БД
+        { 
           // Подключение к БД
           // string connetionString = "Data Source=localhost;Initial Catalog=bank;User ID=root;Password=559966092";
           //MySqlConnection cnn = new MySqlConnection(connetionString);
@@ -125,11 +122,11 @@ namespace fond
 
         }
 
-        private List<string[]> LoadDataActive() // Массив Активов из БД
+        private List<string[]> LoadDataActive(string k) // Массив Активов из БД
         {
             // Подключение к БД
           //string connetionString = "Data Source=localhost;Initial Catalog=bank;User ID=root;Password=559966092";
-            string connetionString = @"Data Source=.\bank.db;Version=3;";
+            string connetionString = k;
             SQLiteConnection cnn = new SQLiteConnection(connetionString);
             cnn.Open();
 
@@ -151,9 +148,8 @@ namespace fond
             cnn.Close();
             return data_act;
         }
-
-        // вывод в datagridwiew из таблицы БД
-        private void Present(in List<string[]> act, in List<string[]> pas)
+       
+        private void Present(in List<string[]> act, in List<string[]> pas)// вывод в datagridwiew из таблицы БД
         {
 
             foreach (string[] s in act)
@@ -164,13 +160,11 @@ namespace fond
             {
                 dataGridView2.Rows.Add(s);
             }
-        }
+        } 
 
-        private int[,] intersection()
+        private int[,] intersection()// Загрузка пересечений
+
         {
-            //int n = dataGridView3.RowCount;
-
-            //int i, j;
             int[,] DataValue = new int[dataGridView3.Rows.Count, dataGridView3.Columns.Count];
 
             foreach (DataGridViewRow row in dataGridView3.Rows)
@@ -183,13 +177,54 @@ namespace fond
             }
             return DataValue;
         }
-
-
-        private void button1_Click(object sender, EventArgs e)
+       
+        private double[,] DownloadAct()//Загрузка из таблицы Активов
         {
+
+            double[,] DataValue = new double[dataGridView1.Rows.Count-1, dataGridView1.Columns.Count-2];
+
+            for (int j = 0; j < dataGridView1.Rows.Count - 1; j++)
+            {
+              for (int i = 1; i < dataGridView1.Columns.Count - 1; i++)
+                    {
+                        DataValue[j, i-1] = Convert.ToDouble(dataGridView1.Rows[j].Cells[i].Value);
+                    }            
+            }
+            return DataValue;
+        }
+       
+        private double[,] DownloadPas()//Загрузка из таблицы Пассивов
+        {
+            //int n = dataGridView3.RowCount;
+
+            //int i, j;
+            double[,] DataValue = new double[dataGridView2.Rows.Count-1, dataGridView2.Columns.Count-2];
+
+            for (int j = 0; j < dataGridView2.Rows.Count - 1; j++)
+            {
+                    for (int i = 1; i < dataGridView2.Columns.Count-1; i++)
+                    {
+                        DataValue[j, i-1] = Convert.ToDouble(dataGridView2.Rows[j].Cells[i].Value);
+                    }
+            }
+            return DataValue;
+        }
+
+        private void ClearDGW()//Очищение таблицы активов и пассивов
+        {
+            dataGridView1.Rows.Clear();
+            dataGridView2.Rows.Clear();
+        }
+
+        private void button1_Click(object sender, EventArgs e)//Алгоритм
+        {
+
+            //string sk= @"Data Source =.\bank.db; Version = 3;";
             int[,] intersec = intersection();
-            List<string[]> act_str = LoadDataActive();
-            List<string[]> pas_str = LoadDataPassive();
+            double[,] act = DownloadAct();
+            double[,] pas = DownloadPas();
+            /*List<string[]> act_str = LoadDataActive(sk);
+            List<string[]> pas_str = LoadDataPassive(sk);
             //Конвертация в тип double
             double[,] act = new double[act_str.Count, 2];
             double[,] pas = new double[pas_str.Count, 2];
@@ -208,7 +243,7 @@ namespace fond
                     pas[i, j] = Convert.ToDouble(pas_str[i][j + 1]);
                 }
             }
-
+            */
 
             int rezerv = 7;
             int nom_rez = 11;
@@ -254,7 +289,6 @@ namespace fond
                 matr[intersec[i, 0] + 1, matr.GetLength(1) - 1] = pas[intersec[i, 0], 0];
                 matr[intersec[i, 1] + 1 + pas.GetLength(0), matr.GetLength(1) - 1] = act[intersec[i, 1], 0];
 
-
                 if ((intersec[i, 0] == nom_rez) && (intersec[i, 1] < rezerv)) //заполняем ограничения резервов
                 {
                     matr[pas.GetLength(0) + act.GetLength(0) + 1 + k, i] = 1;
@@ -295,9 +329,6 @@ namespace fond
                         bazstolb = i;
                     }
                 }
-
-
-
 
                 for (int i = 1; i < matr.GetLength(0); i++) //находим базовую строку
                 {
@@ -342,7 +373,6 @@ namespace fond
                     }
                 }
 
-
                 q = 0; //проверка на оптимальность
                 for (int i = 0; i < matr.GetLength(1) - 1; i++)
                 {
@@ -356,7 +386,6 @@ namespace fond
             }
 
             double[,] itog = new double[intersec.GetLength(0), 2]; //матрица для итоговых переменных
-
 
             for (int i = 0; i < otvet.GetLength(0); i++)
             {
@@ -398,8 +427,6 @@ namespace fond
 
             int kol_str = fond.GetLength(0);
             int kol_stolb = fond.GetLength(1);
-
-
             Form2 endtable = new Form2();
 
             endtable.Show();
@@ -410,16 +437,28 @@ namespace fond
                 for (int j = 0; j < kol_stolb; ++j)
                 { 
                     endtable.dataGridView1.Rows[i].Cells[j].Value = fond[i, j];
-                    endtable.dataGridView1.Rows[i].HeaderCell.Value = pas_str[i][3];
-                    endtable.dataGridView1.Columns[i].HeaderCell.Value = act_str[i][3];
+                    endtable.dataGridView1.Rows[i].HeaderCell.Value = dataGridView1.Rows[i].Cells[3].Value;
+                    endtable.dataGridView1.Columns[i].HeaderCell.Value = dataGridView2.Rows[i].Cells[3].Value;
                 }
 
-            //    dataGridView1.RowCount = kol_str;
-            //  dataGridView1.ColumnCount = kol_stolb;
 
-            //for (int i = 0; i < kol_str; ++i)
-            //  for (int j = 0; j < kol_stolb; ++j)
-            //    dataGridView1.Rows[i].Cells[j].Value = fond[i, j];
+        }
+
+        private void button2_Click(object sender, EventArgs e)//Выбор файла
+        {
+            if (openFileDialog1.ShowDialog() == DialogResult.Cancel)
+                return;
+            // получаем выбранный файл
+            string filename_1 = openFileDialog1.FileName;
+            label3.Text = filename_1;
+            string filename = @"Data Source = " + filename_1 + "; Version = 3;";
+            ClearDGW();
+            Present(LoadDataActive(filename), LoadDataPassive(filename));
+            label3.Text= Convert.ToString(dataGridView1.Rows[1].Cells[1].Value.GetType());
+        }
+
+        private void tableLayoutPanel1_Paint(object sender, PaintEventArgs e)
+        {
 
         }
     }
