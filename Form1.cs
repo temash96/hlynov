@@ -75,7 +75,7 @@ int[,] x = { {1,0}, // заполняем пересечения
 {1,18 },
 {2,18 }};
 
-        public Form1()
+        public Form1() //Инициализация
         {
             string k = @"Data Source =.\bank.db; Version = 3;";
             InitializeComponent();
@@ -450,16 +450,54 @@ int[,] x = { {1,0}, // заполняем пересечения
                 return;
             // получаем выбранный файл
             string filename_1 = openFileDialog1.FileName;
-            label3.Text = filename_1;
             string filename = @"Data Source = " + filename_1 + "; Version = 3;";
             ClearDGW();
             Present(LoadDataActive(filename), LoadDataPassive(filename));
-            label3.Text= Convert.ToString(dataGridView1.Rows[1].Cells[1].Value.GetType());
         }
 
         private void tableLayoutPanel1_Paint(object sender, PaintEventArgs e)
         {
 
         }
+        private void dataGridView1_CellValidating(object sender, DataGridViewCellValidatingEventArgs e)
+        {
+            if (e.ColumnIndex == dataGridView1.Columns["Column2"].Index || e.ColumnIndex == dataGridView1.Columns["Column7"].Index)
+            {
+                dataGridView1.Rows[e.RowIndex].ErrorText = "";
+                if (dataGridView1.Rows[e.RowIndex].IsNewRow) { return; }
+                if (!double.TryParse(e.FormattedValue.ToString(), out double number) || number < 0)
+                {
+                    e.Cancel = true;
+                    MessageBox.Show("Значение должно быть числовым и положительным!", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
+        }
+        private void dataGridView2_CellValidating(object sender, DataGridViewCellValidatingEventArgs e)
+        {
+            if (e.ColumnIndex == dataGridView2.Columns["Column4"].Index || e.ColumnIndex == dataGridView2.Columns["Column8"].Index)
+            {
+                dataGridView2.Rows[e.RowIndex].ErrorText = "";
+                if (dataGridView2.Rows[e.RowIndex].IsNewRow) { return; }
+                if (!double.TryParse(e.FormattedValue.ToString(), out double number) || number < 0)
+                {
+                    e.Cancel = true;
+                    MessageBox.Show("Значение должно быть числовым и положительным!", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
+        }
+        private void dataGridView3_CellValidating(object sender, DataGridViewCellValidatingEventArgs e)
+        {
+            if (e.ColumnIndex == dataGridView3.Columns["Column5"].Index || e.ColumnIndex == dataGridView3.Columns["Column6"].Index)
+            {
+                dataGridView3.Rows[e.RowIndex].ErrorText = "";
+                if (dataGridView3.Rows[e.RowIndex].IsNewRow) { return; }
+                if (!double.TryParse(e.FormattedValue.ToString(), out double number) || number < 0)
+                {
+                    e.Cancel = true;
+                    MessageBox.Show("Значение должно быть числовым и положительным!", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
+        }
+
     }
 }
